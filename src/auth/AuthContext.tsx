@@ -1,4 +1,10 @@
-import { GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth'
+import {
+  GoogleAuthProvider,
+  getRedirectResult,
+  onAuthStateChanged,
+  signInWithRedirect,
+  signOut,
+} from 'firebase/auth'
 import type { User } from 'firebase/auth'
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { auth } from '../firebase'
@@ -48,6 +54,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return
       }
       try {
+        await getRedirectResult(auth)
         await refreshClaims()
         setError(null)
       } catch (err) {
@@ -65,7 +72,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signInWithGoogle = async () => {
     try {
       setError(null)
-      await signInWithPopup(auth, provider)
+      await signInWithRedirect(auth, provider)
     } catch (err) {
       console.error(err)
       setError('ログインに失敗しました。')
