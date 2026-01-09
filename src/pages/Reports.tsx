@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { db } from '../firebase'
 import { formatTimestamp } from '../utils/format'
-import { Report } from '../types'
+import type { Report } from '../types'
 
 export function ReportsPage() {
   const [reports, setReports] = useState<Report[]>([])

@@ -12,7 +12,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { moderatePost } from '../api/functions'
 import { db } from '../firebase'
-import { ModerationAction, Post, Report } from '../types'
+import type { ModerationAction, Post, Report } from '../types'
 import { formatTimestamp } from '../utils/format'
 
 export function PostDetailPage() {

@@ -2,7 +2,7 @@ import { collection, getDocs, limit, orderBy, query } from 'firebase/firestore'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { db } from '../firebase'
-import { Inquiry } from '../types'
+import type { Inquiry } from '../types'
 import { formatTimestamp } from '../utils/format'
 
 export function InquiriesPage() {

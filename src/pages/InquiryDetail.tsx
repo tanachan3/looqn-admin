@@ -11,7 +11,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { replyInquiry, updateInquiry } from '../api/functions'
 import { db } from '../firebase'
-import { Inquiry, InquiryMessage } from '../types'
+import type { Inquiry, InquiryMessage } from '../types'
 import { formatTimestamp } from '../utils/format'
 
 export function InquiryDetailPage() {
