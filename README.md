@@ -1,73 +1,75 @@
-# React + TypeScript + Vite
+# LooQN 管理画面 (Admin Console)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+運用オペレーター向けの管理画面です。Firebase Authentication (Google) と Firestore を利用し、読み取りはフロント、重要操作は Cloud Functions 経由で実行します。
 
-Currently, two official plugins are available:
+## 主要機能
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Google ログイン (Firebase Auth)
+- custom claims による role 制御 (`operator` / `admin`)
+- 通報キュー、投稿詳細、問い合わせ管理
+- 重要操作は Cloud Functions を呼び出し、`moderation_actions` に監査ログを残す
 
-## React Compiler
+## 環境変数
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+`.env.example` をコピーして `.env` を作成してください。
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+cp .env.example .env
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```env
+VITE_FIREBASE_API_KEY=your-api-key
+VITE_FIREBASE_AUTH_DOMAIN=your-auth-domain
+VITE_FIREBASE_PROJECT_ID=your-project-id
+VITE_FIREBASE_STORAGE_BUCKET=your-storage-bucket
+VITE_FIREBASE_MESSAGING_SENDER_ID=your-messaging-sender-id
+VITE_FIREBASE_APP_ID=your-app-id
 ```
+
+## ローカル起動
+
+```bash
+npm install
+npm run dev
+```
+
+## Firebase 設定
+
+### Google Provider の有効化
+
+Firebase Console → Authentication → Sign-in method → Google を有効化してください。
+
+### custom claims の付与 (例)
+
+Admin SDK を利用して `role` を付与します。
+
+```ts
+import { getAuth } from 'firebase-admin/auth'
+
+await getAuth().setCustomUserClaims(uid, { role: 'operator' })
+```
+
+付与後はクライアント側で `getIdTokenResult(true)` を呼び出して反映します。
+
+## Cloud Functions (API) 想定
+
+- `moderatePost` : `{ postId, action, reasonCode?, note? }`
+- `replyInquiry` : `{ inquiryId, text }`
+- `updateInquiry` : `{ inquiryId, state?, assigneeUid? }`
+
+全ての操作は `moderation_actions` に記録してください。
+
+## Firestore Security Rules 方針
+
+- 管理画面ユーザーは `posts`, `reports`, `inquiries`, `inquiry_messages`, `moderation_actions` を **read-only**
+- 書き込みは Cloud Functions から行う
+
+## 画面構成
+
+- `/login` : ログイン
+- `/` : ダッシュボード
+- `/reports` : 通報キュー
+- `/posts/:postId` : 投稿詳細
+- `/inquiries` : 問い合わせ一覧
+- `/inquiries/:id` : 問い合わせ詳細
+- `/settings` : ログイン情報 / role
