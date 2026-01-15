@@ -10,7 +10,7 @@ admin.initializeApp({
 const uid = "gZcntXE7W5RmoYluLRO1UF7nNjb2";
 
 (async () => {
-    await admin.auth().setCustomUserClaims(uid, { admin: true });
-    console.log("✅ admin claim set for:", uid);
+    await admin.auth().setCustomUserClaims(uid, { role: "admin" });
+    console.log("✅ admin role claim set for:", uid);
     process.exit(0);
 })();
